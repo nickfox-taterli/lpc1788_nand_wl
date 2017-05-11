@@ -1,10 +1,8 @@
 #include "EMC.h"
 
-uint32_t NandFlash_CurrentWriteSectorAddr; //当前写的扇区地址
-uint32_t NandFlash_CurrentReadSectorAddr;  //当前读的扇区地址
-uint32_t NandFlash_NeedWriteBack; //需要回写的标志
-
-uint8_t NandFlash_SectorBuf[NandFlash_SECTOR_SIZE]; //读写扇区用的缓冲区
+static uint32_t NandFlash_CurrentWriteSectorAddr; //当前写的扇区地址
+static uint32_t NandFlash_CurrentReadSectorAddr;  //当前读的扇区地址
+static uint32_t NandFlash_NeedWriteBack; //需要回写的标志
 
 static uint32_t NandFlash_BadBlockTable[2][NandFlash_BAD_BLOCKS_REMAP + 1]; //用来管理坏块的表格
 static uint32_t NandFlash_BadBlocksCount;  //有多少个坏块
