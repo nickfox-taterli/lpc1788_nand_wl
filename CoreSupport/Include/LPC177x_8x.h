@@ -382,6 +382,53 @@ typedef struct
   __O  uint32_t CLR;
 } LPC_GPIO_TypeDef;
 
+/*------------- General Purpose Input/Output (GPIO) --------------------------*/
+/** @brief General Purpose Input/Output (GPIO) register structure definition */
+typedef struct {
+  uint32_t M0 : 1;	
+  uint32_t M1 : 1;
+  uint32_t M2 : 1;
+  uint32_t M3 : 1;	
+  uint32_t M4 : 1;
+  uint32_t M5 : 1;
+  uint32_t M6 : 1;	
+  uint32_t M7 : 1;
+  uint32_t M8 : 1;
+  uint32_t M9 : 1;	
+  uint32_t M10 : 1;
+  uint32_t M11 : 1;
+  uint32_t M12 : 1;	
+  uint32_t M13 : 1;
+  uint32_t M14 : 1;
+  uint32_t M15 : 1;	
+  uint32_t M16 : 1;
+  uint32_t M17 : 1;
+  uint32_t M18 : 1;	
+  uint32_t M19 : 1;
+  uint32_t M20 : 1;
+  uint32_t M21 : 1;	
+  uint32_t M22 : 1;
+  uint32_t M23 : 1;
+  uint32_t M24 : 1;	
+  uint32_t M25 : 1;
+  uint32_t M26 : 1;	
+  uint32_t M27 : 1;
+  uint32_t M28 : 1;	
+  uint32_t M29 : 1;
+  uint32_t M30 : 1;
+  uint32_t M31 : 1;	
+} uint32_t_BitBand __attribute__((bitband));
+
+typedef struct
+{
+  __IO uint32_t_BitBand DIR;
+       uint32_t RESERVED0[3];
+  __IO uint32_t_BitBand MASK;
+  __IO uint32_t_BitBand PIN;
+  __IO uint32_t_BitBand SET;
+  __O  uint32_t_BitBand CLR;
+} LPC_GPIO_BitBand_TypeDef;
+
 /** @brief General Purpose Input/Output interrupt (GPIOINT) register structure definition */
 typedef struct
 {
@@ -1475,6 +1522,12 @@ typedef struct
 #define LPC_GPIO3             ((LPC_GPIO_TypeDef      *) LPC_GPIO3_BASE    )
 #define LPC_GPIO4             ((LPC_GPIO_TypeDef      *) LPC_GPIO4_BASE    )
 #define LPC_GPIO5             ((LPC_GPIO_TypeDef      *) LPC_GPIO5_BASE    )
+#define LPC_GPIO0_BB          ((LPC_GPIO_BitBand_TypeDef      *) LPC_GPIO0_BASE    )
+#define LPC_GPIO1_BB          ((LPC_GPIO_BitBand_TypeDef      *) LPC_GPIO1_BASE    )
+#define LPC_GPIO2_BB          ((LPC_GPIO_BitBand_TypeDef      *) LPC_GPIO2_BASE    )
+#define LPC_GPIO3_BB          ((LPC_GPIO_BitBand_TypeDef      *) LPC_GPIO3_BASE    )
+#define LPC_GPIO4_BB          ((LPC_GPIO_BitBand_TypeDef      *) LPC_GPIO4_BASE    )
+#define LPC_GPIO5_BB          ((LPC_GPIO_BitBand_TypeDef      *) LPC_GPIO5_BASE    )
 #define LPC_EMC               ((LPC_EMC_TypeDef       *) LPC_EMC_BASE      )
 #define LPC_CRC               ((LPC_CRC_TypeDef       *) LPC_CRC_BASE      )
 #define LPC_EEPROM            ((LPC_EEPROM_TypeDef    *) LPC_EEPROM_BASE   )

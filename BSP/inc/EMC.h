@@ -47,5 +47,6 @@ void NORFLASH_WriteWord( uint32_t Addr, uint16_t Data );
 uint32_t NandFlash_WriteOneSector(uint32_t Addr, uint8_t *pBuf, uint32_t Remain);
 uint32_t NandFlash_ReadOneSector(uint32_t Addr, uint8_t  *pBuf, uint32_t Remain);
 void NandFlash_Init(void);
+void NandFlash_ReadId(uint8_t *Buf);
 
 #endif

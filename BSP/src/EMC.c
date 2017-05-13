@@ -162,7 +162,8 @@ void NORRAM_Init(void)
     LPC_EMC->StaticWaitWr1 = 0x0000001F;
     LPC_EMC->StaticWaitTurn1 = 0x0000000F;
 
-    LPC_GPIO2->DIR &= ~(1 << 21);
+		LPC_GPIO2_BB->DIR.M21 = 0;
+	
 }
 
 /********************************************************************
@@ -182,7 +183,6 @@ void NORFLASH_MassErase( void )
     *(volatile uint16_t *)(0x80005554) = 0x0055;
     *(volatile uint16_t *)(0x8000AAAA) = 0x0010;
 
-    for(i = 0; i < 0xffffff; i++);
 }
 
 /********************************************************************
@@ -207,7 +207,7 @@ void NORFLASH_WriteWord( uint32_t Addr, uint16_t Data )
 返    回：无
 备    注：无
 ********************************************************************/
-void NandFlash_WriteCommand(uint8_t Cmd)
+__INLINE static void NandFlash_WriteCommand(uint8_t Cmd)
 {
     *((volatile uint8_t *)0x92000000) = Cmd;
 }
@@ -218,7 +218,7 @@ void NandFlash_WriteCommand(uint8_t Cmd)
 返    回：数据
 备    注：无
 ********************************************************************/
-uint8_t NandFlash_ReadDataByte()
+__INLINE static uint8_t NandFlash_ReadDataByte()
 {
     return  *(((volatile uint8_t *)0x90000000));
 }
@@ -229,7 +229,7 @@ uint8_t NandFlash_ReadDataByte()
 返    回：无
 备    注：无
 ********************************************************************/
-void NandFlash_WriteDataByte(uint8_t Data)
+__INLINE static void NandFlash_WriteDataByte(uint8_t Data)
 {
     *((volatile uint8_t *)0x90000000) = Data;
 }
@@ -240,7 +240,7 @@ void NandFlash_WriteDataByte(uint8_t Data)
 返    回：无
 备    注：无
 ********************************************************************/
-void NandFlash_WriteAddr(uint8_t Addr)
+__INLINE static void NandFlash_WriteAddr(uint8_t Addr)
 {
     *((volatile uint8_t *)0x91000000) = Addr;
 }
@@ -251,10 +251,10 @@ void NandFlash_WriteAddr(uint8_t Addr)
 返    回：无
 备    注：R/B引脚是用来判断忙碌的.
 ********************************************************************/
-void NandFlash_Wait( void )
+static void NandFlash_Wait( void )
 {
-    while( LPC_GPIO2->PIN & (1 << 21) );
-    while( !(LPC_GPIO2->PIN & (1 << 21)) );
+    while( LPC_GPIO2_BB->PIN.M21 );
+    while( !LPC_GPIO2_BB->PIN.M21 );
 }
 
 /********************************************************************
@@ -263,7 +263,7 @@ void NandFlash_Wait( void )
 返    回：无
 备    注：无
 ********************************************************************/
-void NandFlash_WriteAddr4Byte(uint32_t Addr)
+static void NandFlash_WriteAddr4Byte(uint32_t Addr)
 {
     uint8_t i;
 
@@ -285,7 +285,7 @@ void NandFlash_WriteAddr4Byte(uint32_t Addr)
 返    回：无
 备    注：无
 ********************************************************************/
-void NandFlash_WriteAddr2Byte(uint32_t Addr)
+static void NandFlash_WriteAddr2Byte(uint32_t Addr)
 {
     uint8_t i;
 
@@ -306,7 +306,7 @@ void NandFlash_WriteAddr2Byte(uint32_t Addr)
 返    回：无
 备    注：无
 ********************************************************************/
-void NandFlash_WritePageAddr(uint32_t Addr)
+static void NandFlash_WritePageAddr(uint32_t Addr)
 {
     uint8_t i;
 
@@ -320,26 +320,13 @@ void NandFlash_WritePageAddr(uint32_t Addr)
     }
 }
 
-
-/********************************************************************
-函数功能：NAND底层函数 - 复位
-入口参数：无
-返    回：无
-备    注：返回代表复位OK了.
-********************************************************************/
-void NandFlash_FlashReset(void)
-{
-    NandFlash_WriteCommand(0xFF); //写复位命令
-    NandFlash_Wait();  //等待命令完成
-}
-
 /********************************************************************
 函数功能：NAND底层函数 - 返回状态寄存器
 入口参数：地址
 返    回：无
 备    注：无
 ********************************************************************/
-uint8_t NandFlash_ReadStatus(void)
+static uint8_t NandFlash_ReadStatus(void)
 {
     NandFlash_WriteCommand(0x70);  //写查询命令
     return *((volatile uint8_t *)0x91000000);  //读回状态
@@ -351,7 +338,7 @@ uint8_t NandFlash_ReadStatus(void)
 返    回：无
 备    注：返回状态寄存器.
 ********************************************************************/
-uint8_t NandFlash_WritePage(void)
+static uint8_t NandFlash_WritePage(void)
 {
     NandFlash_WriteCommand(0x10);  //页写命令
     NandFlash_Wait();  //等待写完成
@@ -364,7 +351,7 @@ uint8_t NandFlash_WritePage(void)
 返    回：无
 备    注：返回状态寄存器.
 ********************************************************************/
-uint8_t NandFlash_EraseBlock(uint32_t Addr)
+static uint8_t NandFlash_EraseBlock(uint32_t Addr)
 {
     //擦除命令第一字节命令
     NandFlash_WriteCommand(0x60);
@@ -379,25 +366,12 @@ uint8_t NandFlash_EraseBlock(uint32_t Addr)
 }
 
 /********************************************************************
-函数功能：NAND底层函数 - 发送写页指令
-入口参数：无
-返    回：无
-备    注：返回状态寄存器.
-********************************************************************/
-uint8_t NandFlash_FlashWritePage(void)
-{
-    NandFlash_WriteCommand(0x10);  //页写命令
-    NandFlash_Wait();  //等待写完成
-    return NandFlash_ReadStatus();
-}
-
-/********************************************************************
 函数功能：NAND底层函数 - 内部搬移
 入口参数：源地址 + 目标地址
 返    回：无
 备    注：返回状态寄存器.
 ********************************************************************/
-uint8_t NandFlash_CopyPage(uint32_t sAddr, uint32_t dAddr)
+static uint8_t NandFlash_CopyPage(uint32_t sAddr, uint32_t dAddr)
 {
     //读源数据到内部缓存
     NandFlash_WriteCommand(0x00);
@@ -437,7 +411,7 @@ void NandFlash_ReadId(uint8_t *Buf)
 返    回：无
 备    注：返回映射块地址.
 ********************************************************************/
-uint32_t NandFlash_GetNewRemapBlock(void)
+static uint32_t NandFlash_GetNewRemapBlock(void)
 {
     uint32_t i, Addr;
     for(i = 0; i < NandFlash_BAD_BLOCKS_REMAP; i++)
@@ -465,7 +439,7 @@ uint32_t NandFlash_GetNewRemapBlock(void)
 返    回：无
 备    注：无
 ********************************************************************/
-void NandFlash_MarkRemapBlockBad(uint32_t Addr)
+static void NandFlash_MarkRemapBlockBad(uint32_t Addr)
 {
     uint32_t i;
     i = (Addr - NandFlash_BAD_BLOCK_REMAP_ADDR) / NandFlash_BLOCK_SIZE; //计算偏移量
@@ -479,7 +453,7 @@ void NandFlash_MarkRemapBlockBad(uint32_t Addr)
 返    回：无
 备    注：映射后地址
 ********************************************************************/
-uint32_t NandFlash_AddrRemap(uint32_t Addr)
+static uint32_t NandFlash_AddrRemap(uint32_t Addr)
 {
     static uint32_t CurrentRemapBlockAddr;
     uint32_t i, j;
@@ -554,7 +528,7 @@ uint32_t NandFlash_AddrRemap(uint32_t Addr)
 返    回：无
 备    注：NandFlash_BadBlockTable 是全局变量.
 ********************************************************************/
-void NandFlash_SaveBadBlockTable(void)
+static void NandFlash_SaveBadBlockTable(void)
 {
     uint32_t i, j, k, Sum;
 
@@ -649,7 +623,7 @@ void NandFlash_SaveBadBlockTable(void)
 返    回：无
 备    注：NandFlash_BadBlockTable 是全局变量.
 ********************************************************************/
-void NandFlash_LoadBadBlockTable(void)
+static void NandFlash_LoadBadBlockTable(void)
 {
     uint32_t i, j, k, Sum, Ok;
     uint8_t Data;
@@ -879,7 +853,7 @@ void NandFlash_LoadBadBlockTable(void)
 返    回：下一个可以用的交换区地址
 备    注：无
 ********************************************************************/
-uint32_t NandFlash_ManageSwapBlock(uint32_t Op)
+static uint32_t NandFlash_ManageSwapBlock(uint32_t Op)
 {
     static uint32_t Current;
     static uint8_t FlashSwapBlockStatus[NandFlash_SWAP_BLOCKS];
@@ -926,7 +900,7 @@ uint32_t NandFlash_ManageSwapBlock(uint32_t Op)
 返    回：无
 备    注：无
 ********************************************************************/
-void NandFlash_UpdateBadBlockTable(uint32_t OldAddr, uint32_t NewAddr)
+static void NandFlash_UpdateBadBlockTable(uint32_t OldAddr, uint32_t NewAddr)
 {
     uint32_t i, j;
     OldAddr &= ~(NandFlash_BLOCK_SIZE - 1); //求得一块内起始地址
@@ -977,7 +951,7 @@ void NandFlash_UpdateBadBlockTable(uint32_t OldAddr, uint32_t NewAddr)
 备    注：当Remain不为0时，将保存当前地址以备后面的继续读当前页，当不为0时，
           设置当前读地址为无效，从而下次读时必须重新使用读命令将数据从flash中读入到页缓存。
 ********************************************************************/
-uint32_t NandFlash_DealBadBlock(uint32_t Addr, uint32_t Type)
+static uint32_t NandFlash_DealBadBlock(uint32_t Addr, uint32_t Type)
 {
     uint32_t i;
     uint32_t RemapBlockAddr;
@@ -1061,7 +1035,7 @@ Exit:
           那么说明原来的块已经损坏，需要重新影射到一个好的块。
           这时返回的地址就是重新影射过后的地址。
 ********************************************************************/
-uint32_t NandFlash_CopyBlockToSwap(uint32_t Addr)
+static uint32_t NandFlash_CopyBlockToSwap(uint32_t Addr)
 {
     uint32_t SwapAddr;
     uint32_t i;
