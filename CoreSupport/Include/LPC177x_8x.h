@@ -714,11 +714,19 @@ typedef struct
 
 /*------------- Real-Time Clock (RTC) ----------------------------------------*/
 /** @brief  Real-Time Clock (RTC) register structure definition */
+typedef struct {
+  uint8_t CLKEN : 1;	
+  uint8_t CTCRST : 1;
+  uint8_t RESERVED0 : 2;
+  uint8_t CCALEN : 1;	
+  uint8_t RESERVED1 : 3;
+} RTC_CCR_BitBand __attribute__((bitband));
+
 typedef struct
 {
   __IO uint8_t  ILR;
        uint8_t  RESERVED0[7];
-  __IO uint8_t  CCR;
+  __IO RTC_CCR_BitBand  CCR;
        uint8_t  RESERVED1[3];
   __IO uint8_t  CIIR;
        uint8_t  RESERVED2[3];

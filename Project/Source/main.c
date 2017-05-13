@@ -2,30 +2,41 @@
 #include "arm_math.h"
 
 #include "EMC.h"
+#include "ff.h"
 
-#define BUFFER_SIZE         512
-uint8_t TxBuffer[BUFFER_SIZE], RxBuffer[BUFFER_SIZE];  //发送和接收数据缓冲区
+FATFS fs;
+FRESULT res;
 
-void Fill_Buffer(uint8_t *pBuffer, uint16_t BufferLenght, uint32_t Offset)
+void RTC_Init(void)
 {
-    uint16_t IndexTmp = 0;
-
-    /* Put in global buffer same values */
-    for (IndexTmp = 0; IndexTmp < BufferLenght; IndexTmp++ )
+    if(!LPC_RTC->CCR.CLKEN)
     {
-        pBuffer[IndexTmp] = IndexTmp + Offset;
+        LPC_RTC->CCR.CLKEN = 1;
+        LPC_RTC->SEC = 0;
+        LPC_RTC->MIN = 0;
+        LPC_RTC->HOUR = 10;
+
+        LPC_RTC->DOW = 6;
+        LPC_RTC->DOM = 1;
+        LPC_RTC->DOY = 1;
+
+        LPC_RTC->MONTH = 1;
+        LPC_RTC->YEAR = 2017;
+
+        LPC_RTC->CALIBRATION = 4;
+        LPC_RTC->CCR.CCALEN = 0;
     }
 }
 
 int32_t main()
 {
 
-    NORRAM_Init();
+    SEGGER_RTT_Init();
 
-   NandFlash_Init();
-    Fill_Buffer(TxBuffer, BUFFER_SIZE , 0xA5);
-    NandFlash_WriteOneSector(0, TxBuffer, 0); /* bug in here */
-    NandFlash_ReadOneSector(0, RxBuffer, 0);
+    NORRAM_Init();
+    RTC_Init();
+
+    res = f_mount(&fs, "0:", 1);
 
     while(1)
     {
