@@ -30,9 +30,6 @@ void RTC_Init(void)
 
 int32_t main()
 {
-
-    SEGGER_RTT_Init();
-
     NORRAM_Init();
     RTC_Init();
 
